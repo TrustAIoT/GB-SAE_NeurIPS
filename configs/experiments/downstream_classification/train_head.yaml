@@ -1,0 +1,24 @@
+# Experiment settings; referenced configurations supply shared fields.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+gbsae_config: ../../train/config_i.yaml  # Authoritative GB-SAE training YAML, relative to this file.
+selection:  # Sources, method variants or sweep values selected for this job.
+  sources: null  # null selects all sources from the referenced training recipe.
+inputs:  # Saved checkpoints, manifests and other experiment inputs.
+  ckpt: artifacts/config_i/weights/checkpoint.pth  # Trained SAE checkpoint, including the saved source projectors.
+loader:  # DataLoader settings for this experiment.
+  batch_size: 64  # Images per DataLoader batch.
+  num_workers: 16  # DataLoader worker processes; 0 loads data in the main process.
+training:  # Training-loop settings for this model or head.
+  epochs: 50  # Number of training epochs.
+  lr: 0.001  # Base learning rate for this training loop.
+  weight_decay: 0.01  # AdamW weight-decay coefficient.
+  num_classes: null  # Classifier output classes; null lets the entry determine the count.
+  save_every: 10  # Save a checkpoint every this many epochs; final-save behavior follows the entry.
+evaluation:  # Evaluation, representation selection and diagnostic limits.
+  std_mode: ckpt  # ckpt uses saved normalization statistics; recompute estimates them from selected data.
+  max_batches: null  # Optional batch limit for diagnostics; null processes all batches.
+runtime:  # Execution device and random seeds.
+  device: auto  # auto selects CUDA when available, otherwise CPU.
+output:  # Paths and names of artifacts produced by this entry.
+  save_dir: artifacts/downstream_classification  # Directory for saved heads/checkpoints and training logs.

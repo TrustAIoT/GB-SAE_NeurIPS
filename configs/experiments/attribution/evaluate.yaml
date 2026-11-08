@@ -1,0 +1,29 @@
+# Experiment settings; referenced configurations supply shared fields.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+gbsae_config: ../../train/config_i.yaml  # Authoritative GB-SAE training YAML, relative to this file.
+selection:  # Sources, method variants or sweep values selected for this job.
+  sources: null  # null selects all sources from the referenced training recipe.
+inputs:  # Saved checkpoints, manifests and other experiment inputs.
+  ckpt: artifacts/config_i/weights/checkpoint.pth  # Trained SAE checkpoint, including the saved source projectors.
+  probe_root: artifacts/attribution_probes  # Root directory containing trained classification-probe checkpoints.
+data:  # Image/cache selection and token preprocessing.
+  split: val  # Physical split directory name under the selected image/cache roots.
+loader:  # DataLoader settings for this experiment.
+  batch_size: 32  # Images per DataLoader batch.
+  num_workers: 8  # DataLoader worker processes; 0 loads data in the main process.
+evaluation:  # Evaluation, representation selection and diagnostic limits.
+  probe_std_mode: ckpt  # Normalization statistics for probe inputs: ckpt or recompute.
+  probe_match:  # All listed substrings must occur in the chosen probe path; null applies no filters.
+  - projector
+  - epoch-50
+  max_batches: null  # Optional batch limit for diagnostics; null processes all batches.
+  prediction_agreement_k: 10  # Keep/remove agreement count; must lie in 1..sae.k.
+random_baseline:  # Uniform random orthogonal components; only the component count k is matched.
+  seeds: [2026110500, 2026110501, 2026110502, 2026110503, 2026110504, 2026110505, 2026110506, 2026110507, 2026110508, 2026110509]
+  mask_seed_offset: 100000  # Each repeat uses seed + offset for independent per-image subsets.
+runtime:  # Execution device and random seeds.
+  device: auto  # auto selects CUDA when available, otherwise CPU.
+  seed: 10  # Reset model/loader RNGs per source; batch composition affects encoder BatchNorm.
+output:  # Paths and names of artifacts produced by this entry.
+  output_csv: artifacts/attribution/suff_comp_results.csv  # Shared/private/total/random curves; companion CSVs are saved beside this file.

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gated-bottleneck-sae"
+version = "0.1.0"
+description = "GB-SAE: a unified cross-model semantic dictionary with gated bottleneck sparse autoencoders"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.0", "torchvision>=0.15", "numpy", "einops", "PyYAML",
+  "tqdm", "scipy", "scikit-learn", "matplotlib", "Pillow",
+  "timm", "opencv-python-headless",
+]
+
+[project.optional-dependencies]
+tracking = ["wandb"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cache*", "gbsae*", "experiments*"]

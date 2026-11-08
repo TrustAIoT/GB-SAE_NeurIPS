@@ -1,0 +1,13 @@
+# Inspect a completed combined cache. Use source_roots instead for per-source caches.
+action: inspect
+models:  # Sources required in every combined file.
+  ViT: {type: ViT}
+  SigLIP: {type: SigLIP}
+  DinoV2: {type: DinoV2}
+data:
+  split: train  # The physical directory and manifest split.
+inputs:
+  manifest: data/cache/config_i_merged/manifests/train.csv  # null enables directory discovery with sidecars.
+  combined_root: data/cache/config_i_merged/combined  # Root containing split/class combined files.
+output:
+  root: data/cache/config_i_merged  # inspection.json is saved here.

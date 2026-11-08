@@ -1,0 +1,85 @@
+# Authoritative GB-SAE training recipe.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+models:  # Backbone identifiers and feature dimensions.
+  sources:  # Ordered source/cache keys used by this entry.
+  - ViT
+  - SigLIP
+  - DinoV2
+  input_dims:  # Raw feature width D for each source, before projection.
+    DinoV2: 384
+    SigLIP: 768
+    ViT: 768
+data:  # Image/cache selection and token preprocessing.
+  activation_root: data/activations/config_i  # Root of cached activations, organized by split and class.
+  divide_norm: false  # Per-token L2 normalization, used only when standardize is false.
+  imagenet_root: data/imagenet  # ImageNet image/metadata root; supplies filenames and class labels.
+  split: train  # Physical split directory name under the selected image/cache roots.
+  standardize: true  # Standardize features; takes precedence over divide_norm.
+  target_class: null  # Class filter; null or ALL keeps all classes.
+  use_class_tokens: false  # Keep cached prefix tokens when true; remove them when false.
+  prefix_tokens:  # Cached leading non-patch token counts per source, before removal.
+    ViT: 1
+    SigLIP: 0
+    DinoV2: 1
+  combined_npz: true  # true: one NPZ keyed by source; false: separate per-source NPZ files.
+  activation_layouts:  # Per-source cache layout: tokens=[T,D], channels_first=[D,H,W], channels_last=[H,W,D].
+    ViT: tokens
+    SigLIP: tokens
+    DinoV2: tokens
+  token_alignment:  # Per-source patch grids; null skips resizing. Prefixes are handled separately.
+    ViT:
+      input_grid: 14  # Input patch-grid side length; patch count is input_grid squared.
+      output_grid: 14  # Target patch-grid side length after interpolation.
+    SigLIP:
+      input_grid: 14  # Input patch-grid side length; patch count is input_grid squared.
+      output_grid: 14  # Target patch-grid side length after interpolation.
+    DinoV2:
+      input_grid: 16  # Input patch-grid side length; patch count is input_grid squared.
+      output_grid: 14  # Target patch-grid side length after interpolation.
+projector:  # Projection from each raw feature space into the common feature space.
+  kwargs:  # Constructor options for the selected projector type.
+    mode: orthogonal  # Frozen-projector initialization: orthogonal or gaussian.
+    scale: false  # Divide the random projection weights by sqrt(input feature width).
+  output_dim: 768  # Common projected feature width shared by the configured sources.
+  type: frozen_random  # Projector implementation: frozen_random or learnable.
+sae:  # Sparse autoencoder architecture and sparsity settings.
+  dictionary_norm: l2  # Dictionary-atom normalization used by the SAE.
+  encoder_module: mlp_bn_1  # Encoder architecture identifier; must match the trained checkpoint.
+  k: 32  # Single total Top-K budget before the gate splits shared/private contributions.
+  n_components: 6144  # Number of latent concepts/dictionary atoms.
+loss:  # Reconstruction, alignment and regularization weights.
+  recon_loss: l2  # Reconstruction error type: l1 or l2.
+  lambda_sh_only: 0.5  # Weight of reconstruction using only the shared branch; 0 disables it.
+  lambda_shpr: 0.0  # Shared/private dictionary orthogonality weight; 0 disables it.
+  lambda_gate_bin: 0.2  # Gate binarization penalty weight, scaled by the gate schedule.
+  lambda_gate_ratio: 0.0  # Mean-gate ratio penalty weight, scaled by the gate schedule.
+  gate_ratio_target: 0.0  # Target mean gate value; used when lambda_gate_ratio is positive.
+  lambda_align: 1.3  # Cross-source shared-code alignment loss weight; 0 disables it.
+optimizer:  # GB-SAE optimizer and learning-rate schedule settings.
+  final_lr: 1.0e-06  # Final learning rate of the cosine schedule.
+  lr: 0.0003  # Base learning rate for this training loop.
+  warmup_lr: 1.0e-06  # Starting learning rate during optimizer warmup.
+  warmup_pct: 0.05  # Fraction of optimizer steps used for learning-rate warmup.
+  weight_decay: 1.0e-05  # AdamW weight-decay coefficient.
+schedule:  # Training-progress schedule for gate regularization.
+  steady_pct: 0.1  # Training-progress fraction when gate penalties reach their full configured weights.
+  warmup_pct: 0.0  # Training-progress fraction before gate penalties begin their linear ramp.
+training:  # Training-loop settings for this model or head.
+  batch_size: 32  # Images per DataLoader batch.
+  enc_clip: 1.0  # Base gradient-norm clip for encoder/shared decoder; private clip is scaled by source count.
+  epochs: 30  # Number of training epochs.
+  num_workers: 16  # DataLoader worker processes; 0 loads data in the main process.
+  save_every: 10  # Save a checkpoint every this many epochs; final-save behavior follows the entry.
+  seeded: true  # Seed Python/torch to 10 inside training; dataset/model construction is not seeded here.
+run:  # Run naming, saved checkpoints and diagnostic logging.
+  logger_granularity: 1  # 1 logs per-source metrics; 2 logs their source means.
+  logger_type: full  # Trainer logger implementation; the maintained entry requires full.
+  name: ablation_alignment_high  # Run label used for logging and artifact naming.
+  save_dir: artifacts/ablations/alignment_high  # Directory for saved heads/checkpoints and training logs.
+  use_wandb: false  # Enable Weights & Biases logging for this run.
+  wandb_online: false  # true uploads to W&B; false uses offline logging.
+  wandb_project: GB-SAE_full  # Weights & Biases project name; used when use_wandb is true.
+  wandb_save_dir: artifacts/config_i/wandb_save  # Local directory for W&B run files.
+runtime:  # Execution device and random seeds.
+  device: auto  # auto selects CUDA when available, otherwise CPU.

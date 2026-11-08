@@ -1,0 +1,7 @@
+# Experiment settings; referenced configurations supply shared fields.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+method: projected  # Representation method: gbsae or projected.
+experiment_config: evaluate.yaml  # Shared experiment settings, relative to this file; local fields override them.
+inputs:  # Saved checkpoints, manifests and other experiment inputs.
+  probe_root: artifacts/attribution_probes  # Root directory containing trained classification-probe checkpoints.

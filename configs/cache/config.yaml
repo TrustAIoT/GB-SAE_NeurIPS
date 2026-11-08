@@ -1,0 +1,44 @@
+# Full train cache for ViT, SigLIP and DinoV2; retain separate source files.
+# Paths are relative to the working directory.
+action: extract  # extract, combine or inspect; run with python -m cache.run --config THIS_FILE.
+models:  # Ordered source identifiers. Their count determines the augmented view pool.
+  ViT:
+    type: ViT  # Built-in backbone type, independent of the source identifier.
+    kwargs:
+      use_half: false  # Preserve default backbone precision.
+    storage_layout: tokens  # Default [T,D], including CLS/prefix. Spatial alternatives require no prefixes.
+  SigLIP:
+    type: SigLIP  # Built-in backbone type, independent of the source identifier.
+    kwargs:
+      use_half: false  # Preserve default backbone precision.
+    storage_layout: tokens  # Default [T,D], including CLS/prefix. Spatial alternatives require no prefixes.
+  DinoV2:
+    type: DinoV2  # Built-in backbone type, independent of the source identifier.
+    kwargs:
+      use_half: false  # Preserve default backbone precision.
+    storage_layout: tokens  # Default [T,D], including CLS/prefix. Spatial alternatives require no prefixes.
+data:
+  type: imagenet  # imagenet (torchvision metadata) or image_folder (split/class/images).
+  root: data/imagenet  # Original image root; all sources share the selected images.
+  split: train  # Physical split directory.
+  export_root: null  # Optional copy of selected originals under export_root/split/class.
+sampling:
+  mode: all  # all, balanced or manifest. all always selects the complete split.
+  manifest: null  # Input CSV used only by mode: manifest.
+  exclude_manifest: null  # Optional same-split CSV to exclude from the selection.
+augmentation:
+  enabled: true  # false: originals; true: N views, with the single-source augmented-only exception.
+  type: slight  # Built-in slight or a module:factory returning a PIL->PIL transform.
+  kwargs:
+    image_size: 224  # Original augmentation crop size; backbone preprocessing follows it.
+loader:
+  batch_size: 256  # Images per extraction batch.
+  num_workers: 8  # Image decoding workers; augmentation/assignment stays deterministic in the main process.
+runtime:
+  seed: 42  # Original filename-based seed mapping for augmentation and view assignment.
+  device: auto  # auto, cpu or an explicit CUDA device.
+output:
+  root: data/cache/config_i  # Runtime artifacts; per_source/ and combined/ are separate subdirectories.
+  mode: per_source  # per_source (default), both (per-source then combined), or combined only.
+  compressed: true  # Compressed NPZ; does not change activation values.
+  overwrite: false  # Explicitly replace existing outputs; otherwise resume only a compatible recipe.

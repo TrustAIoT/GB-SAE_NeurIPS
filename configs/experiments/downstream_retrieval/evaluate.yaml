@@ -1,0 +1,7 @@
+# Experiment settings; referenced configurations supply shared fields.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+experiment_config: config.server.yaml  # Shared experiment settings, relative to this file; local fields override them.
+execution:  # Cache preparation, training/evaluation mode and overwrite controls.
+  eval_only: true  # Evaluate a saved retrieval head without optimizer updates.
+  head_checkpoint: artifacts/downstream_retrieval/gbsae/best.pth  # Saved retrieval head for eval_only; null selects the run's best.pth.

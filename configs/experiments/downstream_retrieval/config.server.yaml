@@ -1,0 +1,58 @@
+# Experiment settings; referenced configurations supply shared fields.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+method: gbsae  # Representation method: gbsae or projected.
+gbsae_config: ../../train/config_i.yaml  # Authoritative GB-SAE training YAML, relative to this file.
+checkpoints:  # Frozen representation-model checkpoints; retrieval heads are trained separately.
+  gbsae: artifacts/config_i/withmag_full_epoch_30.pth  # Frozen GB-SAE checkpoint, including its trained projectors.
+data:  # Image/cache selection and token preprocessing.
+  train:  # Training subset; paths and split must identify the same samples.
+    imagenet_root: data/imagenet_10percent_train  # ImageNet image/metadata root; supplies filenames and class labels.
+    activation_root: data/activations/downstream_train  # Root of cached activations, organized by split and class.
+    split: train  # Physical split directory name under the selected image/cache roots.
+  val:  # Validation subset; keep its samples separate from training.
+    imagenet_root: data/imagenet_10percent_val  # ImageNet image/metadata root; supplies filenames and class labels.
+    activation_root: data/activations/downstream_val  # Root of cached activations, organized by split and class.
+    split: train  # Physical split directory name under the selected image/cache roots.
+  expected_train_classes: 1000  # Expected training class count; null disables only this count assertion.
+  alignment_checks: 100  # Image/cache spot checks per split; WNID mapping checks always run.
+preprocessing:  # Feature preprocessing before retrieval-head training.
+  token_pooling: mean  # Pool token features into one vector per image: mean, max or sum.
+cache:  # Frozen-feature cache extraction and storage settings.
+  batch_size: 32  # Images per frozen-feature extraction batch.
+  num_workers: 16  # DataLoader worker processes; 0 loads data in the main process.
+  dtype: float32  # Floating-point dtype used to store cached frozen features.
+head:  # Trainable retrieval-head architecture.
+  type: linear  # Retrieval head architecture: linear or mlp.
+  output_dim: 256  # Dimension of the normalized retrieval embedding.
+  hidden_dim: 512  # Hidden width of an MLP head; ignored by a linear head.
+  dropout: 0.0  # MLP-head dropout probability; ignored by a linear head.
+training:  # Training-loop settings for this model or head.
+  epochs: 30  # Number of training epochs.
+  lr: 0.001  # Base learning rate for this training loop.
+  weight_decay: 0.0001  # AdamW weight-decay coefficient.
+  classes_per_batch: 16  # Number of classes P in each class-balanced retrieval batch.
+  samples_per_class: 4  # Samples K per selected class; retrieval batch size is P times K.
+  batches_per_epoch: null  # Retrieval batches per epoch; null derives the count from dataset size.
+  temperature: 0.07  # Temperature dividing cosine logits in the contrastive loss.
+  instance_loss_weight: 1.0  # Weight of the paired-image contrastive loss.
+  category_loss_weight: 1.0  # Weight of the same-class contrastive loss.
+  gradient_clip_norm: 5.0  # Maximum retrieval-head gradient norm.
+  eval_every: 5  # Validate and consider the best checkpoint every this many epochs.
+evaluation:  # Evaluation, representation selection and diagnostic limits.
+  ks:  # Recall ranks k to report.
+  - 1
+  - 5
+  - 10
+  - 50
+  embedding_batch_size: 1024  # Cached image features encoded per head-inference batch.
+  query_chunk_size: 512  # Queries scored at once against the gallery during metric computation.
+  device: cuda  # PyTorch device, e.g. cpu or cuda:0.
+execution:  # Cache preparation, training/evaluation mode and overwrite controls.
+  cache_only: false  # Build/audit frozen-feature caches and stop before head training.
+  eval_only: false  # Evaluate a saved retrieval head without optimizer updates.
+  rebuild_cache: false  # Regenerate frozen-feature caches instead of reusing existing ones.
+  head_checkpoint: null  # Saved retrieval head for eval_only; null selects the run's best.pth.
+seed: 10  # Random seed for this entry's sampling/shuffling.
+device: cuda  # PyTorch device, e.g. cpu or cuda:0.
+output_root: artifacts/downstream_retrieval  # Root directory for artifacts produced by this workflow.

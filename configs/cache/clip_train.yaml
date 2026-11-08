@@ -1,0 +1,34 @@
+# CLIP full train cache; save source files for later combinations.
+# Paths are relative to the working directory.
+action: extract  # extract, combine or inspect; run with python -m cache.run --config THIS_FILE.
+models:  # Ordered sources; a single augmented source receives one augmented view.
+  CLIP:
+    type: CLIP  # Built-in backbone type, independent of the source identifier.
+    kwargs:
+      use_half: false  # false: default FP32; true: FP16 model/input for extraction.
+    storage_layout: tokens  # Native [T,D]; keep any CLS/prefix tokens.
+data:
+  type: imagenet  # imagenet (torchvision metadata) or image_folder (split/class/images).
+  root: data/imagenet  # Original image root; all sources share the selected images.
+  split: train  # Physical split directory.
+  export_root: null  # Optional copy of selected originals under export_root/split/class.
+sampling:
+  mode: all  # all, balanced or manifest. all always selects the complete split.
+  manifest: null  # Input CSV used only by mode: manifest.
+  exclude_manifest: null  # Optional same-split CSV to exclude from the selection.
+augmentation:
+  enabled: true  # false: originals; true: N views, with the single-source augmented-only exception.
+  type: slight  # Built-in slight or a module:factory returning a PIL->PIL transform.
+  kwargs:
+    image_size: 224  # Original augmentation crop size; backbone preprocessing follows it.
+loader:
+  batch_size: 256  # Images per extraction batch.
+  num_workers: 8  # Image decoding workers; augmentation/assignment stays deterministic in the main process.
+runtime:
+  seed: 42  # Original filename-based seed mapping for augmentation and view assignment.
+  device: auto  # auto, cpu or an explicit CUDA device.
+output:
+  root: data/cache/clip_train  # Runtime artifacts; per_source/ and combined/ are separate subdirectories.
+  mode: per_source  # per_source (default), both (per-source then combined), or combined only.
+  compressed: true  # Compressed NPZ; does not change activation values.
+  overwrite: false  # Explicitly replace existing outputs; otherwise resume only a compatible recipe.

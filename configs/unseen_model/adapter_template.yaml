@@ -1,0 +1,64 @@
+# New-source adapter settings; shared SAE fields come from gbsae_config.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+gbsae_config: ../train/config_i.yaml  # Authoritative GB-SAE training YAML, relative to this file.
+models:  # Backbone identifiers and feature dimensions.
+  sources:  # Ordered source/cache keys used by this entry.
+  - NewModel
+  input_dims:  # Raw feature width D for each source, before projection.
+    NewModel: 1024
+adapter:  # Frozen base-model checkpoint used to adapt the new source.
+  shared_ckpt: artifacts/config_i/weights/checkpoint.pth  # Base GB-SAE checkpoint whose encoder, gate and shared dictionary stay frozen.
+projector:  # Projection from each raw feature space into the common feature space.
+  type: learnable  # Projector implementation: frozen_random or learnable.
+  kwargs:  # Constructor options for the selected projector type.
+    init: orthogonal  # Learnable-projector initialization: orthogonal or xavier.
+data:  # Image/cache selection and token preprocessing.
+  imagenet_root: data/imagenet  # ImageNet image/metadata root; supplies filenames and class labels.
+  activation_root: data/activations/new_model  # Root of cached activations, organized by split and class.
+  split: train  # Physical split directory name under the selected image/cache roots.
+  target_class: null  # Class filter; null or ALL keeps all classes.
+  combined_npz: false  # true: one NPZ keyed by source; false: separate per-source NPZ files.
+  use_class_tokens: false  # Keep cached prefix tokens when true; remove them when false.
+  prefix_tokens:  # Cached leading non-patch token counts per source, before removal.
+    NewModel: 0
+  activation_layouts:  # Per-source cache layout: tokens=[T,D], channels_first=[D,H,W], channels_last=[H,W,D].
+    NewModel: tokens
+  token_alignment:  # Per-source patch grids; null skips resizing. Prefixes are handled separately.
+    NewModel: null
+loss:  # Reconstruction, alignment and regularization weights.
+  recon_loss: l2  # Reconstruction error type: l1 or l2.
+  lambda_total: 0.1  # Adapter weight on Total reconstruction plus its auxiliary residual term; non-unit weights use l2.
+  lambda_sh_only: 0.5  # Weight of reconstruction using only the shared branch; 0 disables it.
+  lambda_shpr: 0.05  # Shared/private dictionary orthogonality weight; 0 disables it.
+  lambda_gate_bin: 0.0  # Gate binarization penalty weight, scaled by the gate schedule.
+  lambda_gate_ratio: 0.0  # Mean-gate ratio penalty weight, scaled by the gate schedule.
+  gate_ratio_target: 0.5  # Target mean gate value; used when lambda_gate_ratio is positive.
+  lambda_align: 0.0  # Cross-source shared-code alignment loss weight; 0 disables it.
+optimizer:  # GB-SAE optimizer and learning-rate schedule settings.
+  lr: 0.001  # Base learning rate for this training loop.
+  final_lr: 0.0001  # Final learning rate of the cosine schedule.
+  warmup_lr: 1.0e-05  # Starting learning rate during optimizer warmup.
+  warmup_pct: 0.02  # Fraction of optimizer steps used for learning-rate warmup.
+  weight_decay: 0.0001  # AdamW weight-decay coefficient.
+schedule:  # Training-progress schedule for gate regularization.
+  warmup_pct: 0.02  # Training-progress fraction before gate penalties begin their linear ramp.
+  steady_pct: 0.1  # Training-progress fraction when gate penalties reach their full configured weights.
+training:  # Training-loop settings for this model or head.
+  batch_size: 32  # Images per DataLoader batch.
+  num_workers: 16  # DataLoader worker processes; 0 loads data in the main process.
+  epochs: 15  # Number of training epochs.
+  save_every: 1  # Save a checkpoint every this many epochs; final-save behavior follows the entry.
+  enc_clip: 1.0  # Base gradient-norm clip for encoder/shared decoder; private clip is scaled by source count.
+  seeded: true  # Seed Python/torch to 10 inside training; dataset/model construction is not seeded here.
+runtime:  # Execution device and random seeds.
+  device: auto  # auto selects CUDA when available, otherwise CPU.
+run:  # Run naming, saved checkpoints and diagnostic logging.
+  name: new_model_adapter  # Run label used for logging and artifact naming.
+  save_dir: artifacts/new_model_adapter  # Directory for saved heads/checkpoints and training logs.
+  logger_type: full  # Trainer logger implementation; the maintained entry requires full.
+  logger_granularity: 1  # 1 logs per-source metrics; 2 logs their source means.
+  use_wandb: false  # Enable Weights & Biases logging for this run.
+  wandb_project: gbsae-adapter  # Weights & Biases project name; used when use_wandb is true.
+  wandb_online: true  # true uploads to W&B; false uses offline logging.
+  wandb_save_dir: artifacts/new_model_adapter/wandb  # Local directory for W&B run files.

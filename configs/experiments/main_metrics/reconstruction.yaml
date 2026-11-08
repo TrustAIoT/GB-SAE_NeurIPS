@@ -1,0 +1,34 @@
+# Experiment settings; referenced configurations supply shared fields.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+gbsae_config: ../../train/config_i.yaml  # Authoritative GB-SAE training YAML, relative to this file.
+selection:  # Sources, method variants or sweep values selected for this job.
+  sources: null  # Reconstruction source subset; null uses all. Retrieval always uses all sources.
+inputs:  # Saved checkpoints, manifests and other experiment inputs.
+  ckpt: []  # Explicit SAE checkpoint list; [] uses glob/directory discovery.
+  ckpt_glob: []  # Checkpoint glob patterns; [] adds no pattern matches.
+  ckpt_dir: null  # Recursively search this directory for SAE checkpoints; null uses other selections.
+  projector_from: null  # Fallback source key within the same checkpoint if the requested projector is absent.
+data:  # Image/cache selection and token preprocessing.
+  split: val  # Physical split directory name under the selected image/cache roots.
+retrieval_data:  # Optional retrieval-only data selection; null fields reuse the main data selection.
+  imagenet_root: null  # Retrieval image-root override; null reuses data.imagenet_root.
+  activation_root: null  # Retrieval cache-root override; null reuses data.activation_root.
+  split: null  # Retrieval split override; null reuses data.split.
+loader:  # DataLoader settings for this experiment.
+  batch_size: 32  # Images per DataLoader batch.
+  num_workers: 16  # DataLoader worker processes; 0 loads data in the main process.
+retrieval_loader:  # Retrieval-only loader overrides; null fields reuse the common loader settings.
+  batch_size: null  # Retrieval batch-size override; null reuses the common batch size.
+  num_workers: null  # Retrieval worker-count override; null reuses the common worker count.
+evaluation:  # Evaluation, representation selection and diagnostic limits.
+  metrics:  # Metric tasks to run: reconstruction, retrieval or both.
+  - reconstruction
+  pool: mean  # Token pooling for image-level retrieval: mean, max or sum.
+  shared_repr: xhat_sh  # Shared retrieval feature: decoded xhat_sh or sparse code z_sh.
+  private_repr: xhat_pr  # Private retrieval feature: decoded xhat_pr or sparse code z_pr.
+  max_images: null  # Optional image limit; null processes the full selected dataset.
+runtime:  # Execution device and random seeds.
+  device: auto  # auto selects CUDA when available, otherwise CPU.
+output:  # Paths and names of artifacts produced by this entry.
+  output_dir: artifacts/main_metrics  # Directory for evaluation/visualization outputs.

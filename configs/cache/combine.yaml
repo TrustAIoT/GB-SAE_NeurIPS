@@ -1,0 +1,20 @@
+# Combine existing per-source caches; extraction settings come from their metadata.
+action: combine
+models:  # Required sources; type/prefix/layout also describe imported legacy files without sidecars.
+  ViT: {type: ViT, prefix_tokens: 1, storage_layout: tokens, feature_dim: 768}
+  SigLIP: {type: SigLIP, prefix_tokens: 0, storage_layout: tokens, feature_dim: 768}
+  DinoV2: {type: DinoV2, prefix_tokens: 1, storage_layout: tokens, feature_dim: 384}
+data:
+  split: train  # Must match every manifest row and input artifact.
+inputs:
+  manifest: data/cache/config_i/manifests/train.csv  # null discovers the union of existing source identities.
+  combined_root: null  # Optional existing combined directory when appending sources; output uses a different root.
+  source_roots:  # Exact per-source roots; each contains split/class/*.npz. No implicit fallback priority.
+    ViT: data/cache/config_i/per_source
+    SigLIP: data/cache/config_i/per_source
+    DinoV2: data/cache/config_i/per_source
+output:
+  root: data/cache/config_i_merged  # Combined outputs are written below root/combined.
+  mode: combined  # Combination writes complete combined images only.
+  compressed: true  # Preserve values while compressing NPZ arrays.
+  overwrite: false  # Resume compatible outputs; missing/invalid inputs are reported and never partially combined.

@@ -1,0 +1,22 @@
+# Experiment settings; referenced configurations supply shared fields.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+gbsae_config: ../../train/config_i.yaml  # Authoritative GB-SAE training YAML, relative to this file.
+inputs:  # Saved checkpoints, manifests and other experiment inputs.
+  sae_ckpt: artifacts/config_i/weights/checkpoint.pth  # Trained SAE checkpoint used for representation extraction.
+data:  # Image/cache selection and token preprocessing.
+  split: val  # Physical split directory name under the selected image/cache roots.
+loader:  # DataLoader settings for this experiment.
+  batch_size: 16  # Images per DataLoader batch.
+  num_workers: 8  # DataLoader worker processes; 0 loads data in the main process.
+evaluation:  # Evaluation, representation selection and diagnostic limits.
+  topN: 10  # Highest-activation images shown for each selected concept.
+  top_shared_concepts: 100  # Maximum shared concepts selected for visualization.
+  top_private_concepts: 100  # Maximum private concepts selected for visualization.
+  concept_type: all  # Concept family to visualize: shared, private or all.
+  gate_shared_thresh: 0.5  #0.85 # Lower gate threshold for selecting shared concepts.
+  gate_private_thresh: 0.5  #0.15 # Upper gate threshold for selecting private concepts.
+runtime:  # Execution device and random seeds.
+  device: auto  # auto selects CUDA when available, otherwise CPU.
+output:  # Paths and names of artifacts produced by this entry.
+  save_dir: artifacts/concepts  # Directory for saved heads/checkpoints and training logs.

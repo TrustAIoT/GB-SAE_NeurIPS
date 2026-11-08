@@ -1,0 +1,23 @@
+# Experiment settings; referenced configurations supply shared fields.
+# Shared YAML references are relative to this file; data/checkpoint/output paths use the working directory.
+
+method: gbsae  # Representation method: gbsae or projected.
+gbsae_config: ../../train/config_i.yaml  # Authoritative GB-SAE training YAML, relative to this file.
+selection:  # Sources, method variants or sweep values selected for this job.
+  sources: null  # null selects all sources from the referenced training recipe.
+inputs:  # Saved checkpoints, manifests and other experiment inputs.
+  ckpt: artifacts/config_i/weights/checkpoint.pth  # Trained SAE checkpoint, including the saved source projectors.
+  probe_root: artifacts/downstream_classification  # Root directory containing trained classification-probe checkpoints.
+data:  # Image/cache selection and token preprocessing.
+  split: val  # Physical split directory name under the selected image/cache roots.
+loader:  # DataLoader settings for this experiment.
+  batch_size: 64  # Images per DataLoader batch.
+  num_workers: 16  # DataLoader worker processes; 0 loads data in the main process.
+evaluation:  # Evaluation, representation selection and diagnostic limits.
+  std_mode: ckpt  # ckpt uses saved normalization statistics; recompute estimates them from selected data.
+  probe_epoch: 50  # Training epoch encoded in the saved probe filename.
+  max_batches: null  # Optional batch limit for diagnostics; null processes all batches.
+runtime:  # Execution device and random seeds.
+  device: auto  # auto selects CUDA when available, otherwise CPU.
+output:  # Paths and names of artifacts produced by this entry.
+  output_csv: artifacts/downstream_classification/eval_metrics.csv  # CSV path for per-source or per-sample evaluation results.

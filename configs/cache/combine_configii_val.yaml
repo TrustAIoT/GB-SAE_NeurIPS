@@ -1,0 +1,21 @@
+# Combine existing val caches on the ConvNeXt approximately 10% image selection.
+# Run the base val and convnext_val extraction jobs first. No backbone inference here.
+action: combine
+models:  # Source keys to include; explicit shape declarations also support legacy caches.
+  ViT: {type: ViT, prefix_tokens: 1, storage_layout: tokens, feature_dim: 768}
+  ConvNeXt: {type: ConvNeXt, prefix_tokens: 0, storage_layout: tokens, feature_dim: 768}
+  DinoV2: {type: DinoV2, prefix_tokens: 1, storage_layout: tokens, feature_dim: 384}
+data:
+  split: val  # Must match input manifests and cache directories.
+inputs:
+  manifest: data/cache/convnext_val/manifests/val.csv  # Select only the ConvNeXt subset from full base caches.
+  combined_root: null  # Read the per-source caches below, without an existing combined input.
+  source_roots:  # Each root contains split/class/*.npz; base sources need not be recached as subsets.
+    ViT: data/cache/validation/per_source
+    ConvNeXt: data/cache/convnext_val/per_source
+    DinoV2: data/cache/validation/per_source
+output:
+  root: data/cache/config_ii_val  # Separate run roots for train and val; output files are under combined/.
+  mode: combined  # Write complete source-keyed NPZ files plus metadata sidecars.
+  compressed: true  # Lossless NPZ compression; feature values and dtype are preserved.
+  overwrite: false  # Resume compatible outputs; missing inputs are reported without partial files.
