@@ -20,11 +20,11 @@ Jinchi Zhu · Tie Luo
 
 Different vision models can recognize the same dog while emphasizing different
 details: its breed, an accessory, or the surrounding scene. **What do these models
-understand in common, and what is specific to each one?**
+understand in common, and what are specific to each model?**
 
-GB-SAE learns an interpretable concept space from multiple frozen vision models.
-It separates **shared concepts** that connect the models from **private concepts**
-that capture what each model represents differently.
+GB-SAE learns a unified, interpretable concept space from multiple pretrained vision models.
+It discovers **shared concepts** from all the models into a unified dictionary while retaining **private concepts** in separate dictionaries
+that capture model-specific biases.
 
 <p align="center">
   <img src="motivation.png" alt="Different vision models describe the same image through shared semantics and model-specific details." width="900">
