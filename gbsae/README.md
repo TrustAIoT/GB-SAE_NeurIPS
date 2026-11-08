@@ -112,9 +112,6 @@ The supplied main optimizer includes SAE parameters only.
 
 ## Checkpoints and evaluation
 
-For the pretrained Config I checkpoint, download information and matching configuration,
-see [the root README](../README.md#pretrained-config-i-checkpoint).
-
 `run.save_dir` receives `training_config.yaml` and
 `<run.name>_epoch_<zero-based-epoch>.pth`. Checkpoints store `model_state_dict`,
 `linear_projectors`, `optimizer_state_dict`, `epoch`, `learning_rate` and optional

@@ -33,6 +33,8 @@ GB-SAE loaders use images to enumerate samples and labels, and load features fro
 a separate activation root. A subset image tree must contain exactly the images
 whose activation files are available.
 
+The baseline methods reported in the paper were also trained on the same cache features used for GB-SAE which had undergone data augmentation.
+
 ```bash
 python -m cache.run --config configs/cache/config.yaml
 python -m cache.run --config configs/cache/combine.yaml
@@ -78,13 +80,6 @@ does not require matching grids across sources.
 
 Training writes checkpoints and `training_config.yaml` to `run.save_dir`.
 Keep that configuration and its checkpoints together when running other jobs.
-
-### Pretrained Config I checkpoint
-
-The pretrained Config I checkpoint will be provided separately via Google Drive
-(download link to be added). Save it anywhere and set the checkpoint path in your
-experiment YAML. Use [configs/train/config_i.yaml](configs/train/config_i.yaml)
-as the matching GB-SAE configuration.
 
 ## 3. Select an experiment
 

@@ -10,7 +10,7 @@ Jinchi Zhu · Tie Luo
 ![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?logo=pytorch&logoColor=white)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm_Noncommercial-64748B)](LICENSE)
 
-[🚀 Getting started](#getting-started) · [📦 Pretrained checkpoint](#pretrained-config-i-checkpoint) · [🔍 Experiments](#explore-the-concepts) · [📖 Technical guide](TECHNICAL_GUIDE.md)
+[🚀 Getting started](#getting-started) · [🔍 Experiments](#explore-the-concepts) · [📖 Technical guide](TECHNICAL_GUIDE.md)
 
 </div>
 
@@ -55,15 +55,6 @@ repository root, run:
 ```bash
 python -m pip install -e .
 ```
-
-<a id="pretrained-config-i-checkpoint"></a>
-
-### 📦 Pretrained Config I checkpoint
-
-The pretrained checkpoint for **ViT + SigLIP + DINOv2** will be shared via
-**Google Drive** (download link to be added). Save it anywhere, set the checkpoint
-path in your experiment YAML, and use
-[configs/train/config_i.yaml](configs/train/config_i.yaml) as the matching model configuration.
 
 ### 🏋️ Train your own model
 
