@@ -116,6 +116,7 @@ If you find this work useful in your research, please cite:
   year={2026}
 }
 ```
+[Check out paper here](https://arxiv.org/abs/2611.10503).
 
 ## 🙏 Acknowledgments
 
